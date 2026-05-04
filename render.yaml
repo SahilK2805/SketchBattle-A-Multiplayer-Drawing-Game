@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: drawing-game-backend
+    env: node
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+    plan: free
+    autoDeploy: true
+
+  - type: static
+    name: drawing-game-frontend
+    buildCommand: ''
+    staticPublishPath: frontend
+    plan: free
+    autoDeploy: true
