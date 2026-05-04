@@ -9,10 +9,3 @@ services:
         value: production
     plan: free
     autoDeploy: true
-
-  - type: static_site
-    name: drawing-game-frontend
-    buildCommand: ''
-    staticPublishPath: frontend
-    plan: free
-    autoDeploy: true
