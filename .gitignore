@@ -1,0 +1,27 @@
+# Node
+node_modules/
+.env
+.DS_Store
+npm-debug.log*
+
+# Logs
+logs
+*.log
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# VSCode
+.vscode/
+
+# Build
+build/
+dist/
+
+# Misc
+*.swp
+*.swo
+
+# Render
+render.yaml

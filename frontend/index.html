@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SketchBattle – Multiplayer Drawing Game</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>" />
+</head>
+<body>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- Lobby -->
+<div class="lobby-wrapper">
+
+  <!-- Logo -->
+  <div class="logo">
+    <span class="logo-icon">🎨</span>
+    <h1>SketchBattle</h1>
+    <p>Draw. Guess. Conquer. Repeat.</p>
+  </div>
+
+  <!-- Card -->
+  <div class="card lobby-card">
+
+    <!-- Tabs -->
+    <div class="tab-row">
+      <button class="tab-btn active" id="tab-create" onclick="switchTab('create')">✦ Create Room</button>
+      <button class="tab-btn"        id="tab-join"   onclick="switchTab('join')">↗ Join Room</button>
+    </div>
+
+    <!-- CREATE panel -->
+    <div class="tab-panel active" id="panel-create">
+      <div class="field">
+        <label class="input-label" for="create-name">Your Name</label>
+        <input class="input" id="create-name" type="text"
+               placeholder="Enter your username" maxlength="24" autocomplete="off" />
+      </div>
+
+      <div class="settings-row">
+        <div class="field">
+          <label class="input-label" for="rounds">Rounds</label>
+          <select class="input" id="rounds">
+            <option value="2">2 Rounds</option>
+            <option value="3" selected>3 Rounds</option>
+            <option value="5">5 Rounds</option>
+            <option value="7">7 Rounds</option>
+            <option value="10">10 Rounds</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="input-label" for="round-time">Time / Turn</label>
+          <select class="input" id="round-time">
+            <option value="40">40 sec</option>
+            <option value="60">60 sec</option>
+            <option value="80" selected>80 sec</option>
+            <option value="120">120 sec</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn btn-primary w-full" id="btn-create" onclick="handleCreateRoom()">
+        🚀 Create Room
+      </button>
+    </div>
+
+    <!-- JOIN panel -->
+    <div class="tab-panel" id="panel-join">
+      <div class="field">
+        <label class="input-label" for="join-name">Your Name</label>
+        <input class="input" id="join-name" type="text"
+               placeholder="Enter your username" maxlength="24" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label class="input-label" for="join-code">Room Code</label>
+        <input class="input" id="join-code" type="text"
+               placeholder="6-character code" maxlength="6"
+               style="text-transform:uppercase;letter-spacing:0.2em;font-family:'Orbitron',sans-serif"
+               autocomplete="off" />
+      </div>
+      <button class="btn btn-cyan w-full" id="btn-join" onclick="handleJoinRoom()">
+        ↗ Join Game
+      </button>
+    </div>
+
+  </div><!-- /card -->
+
+  <!-- Features -->
+  <div class="features">
+    <div class="feature"><span class="feature-icon">🌐</span><span>Real-time Sync</span></div>
+    <div class="feature"><span class="feature-icon">🏆</span><span>Live Scores</span></div>
+    <div class="feature"><span class="feature-icon">⚡</span><span>Low Latency</span></div>
+    <div class="feature"><span class="feature-icon">🔄</span><span>Auto Reconnect</span></div>
+  </div>
+
+</div><!-- /lobby-wrapper -->
+
+<script src="js/main.js"></script>
+</body>
+</html>

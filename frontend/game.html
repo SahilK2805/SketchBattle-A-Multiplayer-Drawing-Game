@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SketchBattle – Game</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎨</text></svg>" />
+</head>
+<body>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- Connecting screen (shown while socket handshake runs) -->
+<div class="connecting-screen" id="connecting-screen">
+  <div class="spinner"></div>
+  <h2>Connecting…</h2>
+  <p style="color:var(--text-muted);font-size:0.85rem">Joining the game room</p>
+</div>
+
+<!-- Scoreboard overlay (end of game) -->
+<div class="scoreboard-overlay hidden" id="scoreboard-overlay">
+  <div class="card scoreboard-card">
+    <h2>🏆 Game Over!</h2>
+    <p class="winner-announce" id="winner-text">Winner: <strong id="winner-name">—</strong></p>
+    <div class="score-list" id="final-score-list"></div>
+    <div class="scoreboard-actions">
+      <button class="btn btn-green" id="btn-restart" onclick="requestRestart()">🔄 Play Again</button>
+      <button class="btn btn-ghost"                  onclick="leaveGame()">🚪 Leave</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notification pop -->
+<div class="notif-pop" id="notif-pop">
+  <h3 id="notif-title"></h3>
+  <p  id="notif-body"></p>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     MAIN GAME LAYOUT
+     ══════════════════════════════════════════════════ -->
+<div class="game-layout" id="game-layout" style="display:none">
+
+  <!-- ── Header ──────────────────────────────────── -->
+  <header class="game-header">
+    <div class="header-logo">🎨 SketchBattle</div>
+
+    <div class="header-center">
+      <div class="word-display" id="word-display">Waiting…</div>
+      <div class="round-info"   id="round-info">Round 0 / 0</div>
+    </div>
+
+    <div class="header-right">
+      <div class="timer-wrap">
+        <span class="timer-label">Time</span>
+        <span class="timer" id="timer">—</span>
+      </div>
+      <div class="room-badge" title="Click to copy" onclick="copyRoomCode()">
+        ROOM: <span id="header-room-code">——</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Players panel ────────────────────────────── -->
+  <aside class="players-panel">
+    <div class="panel-title">👥 Players</div>
+
+    <!-- Waiting room controls (visible in lobby state) -->
+    <div class="waiting-room" id="waiting-room">
+      <h3>Waiting for players…</h3>
+      <p>Share this code with friends:</p>
+      <div class="room-code-big" id="room-code-big" onclick="copyRoomCode()" title="Click to copy">——</div>
+      <p class="text-muted" style="font-size:0.75rem">Min 2 players needed</p>
+      <button class="btn btn-primary w-full hidden" id="btn-start" onclick="startGame()">
+        ▶ Start Game
+      </button>
+    </div>
+
+    <!-- In-game player list (visible during play) -->
+    <div class="players-list hidden" id="players-list"></div>
+  </aside>
+
+  <!-- ── Canvas area ──────────────────────────────── -->
+  <main class="canvas-area">
+
+    <!-- Drawing toolbar -->
+    <div class="toolbar" id="toolbar">
+      <span class="toolbar-label">Color</span>
+      <div class="color-palette" id="color-palette">
+        <div class="color-swatch active" style="background:#000000" data-color="#000000" onclick="setColor(this)"></div>
+        <div class="color-swatch" style="background:#ffffff" data-color="#ffffff" onclick="setColor(this)"></div>
+        <div class="color-swatch" style="background:#ef4444" data-color="#ef4444" onclick="setColor(this)"></div>
+        <div class="color-swatch" style="background:#f97316" data-color="#f97316" onclick="setColor(this)"></div>
+        <div class="color-swatch" style="background:#eab308" data-color="#eab308" onclick="setColor(this)"></div>
+        <div class="color-swatch" style="background:#22c55e" data-color="#22c55e" onclick="setColor(this)"></div>
+        <div class="color-swatch" style="background:#06b6d4" data-color="#06b6d4" onclick="setColor(this)"></div>
+        <div class="color-swatch" style="background:#6366f1" data-color="#6366f1" onclick="setColor(this)"></div>
+        <div class="color-swatch" style="background:#a855f7" data-color="#a855f7" onclick="setColor(this)"></div>
+        <div class="color-swatch" style="background:#ec4899" data-color="#ec4899" onclick="setColor(this)"></div>
+        <div class="color-swatch" style="background:#78716c" data-color="#78716c" onclick="setColor(this)"></div>
+        <div class="color-swatch" style="background:#1e293b" data-color="#1e293b" onclick="setColor(this)"></div>
+        <input class="color-picker-input" type="color" id="custom-color" title="Custom color"
+               value="#000000" onchange="setCustomColor(this.value)" />
+      </div>
+
+      <div class="toolbar-separator"></div>
+
+      <span class="toolbar-label">Size</span>
+      <div class="brush-sizes" id="brush-sizes">
+        <button class="brush-btn active" data-size="4"  onclick="setBrush(this,4)"  style="width:12px;height:12px"></button>
+        <button class="brush-btn"        data-size="8"  onclick="setBrush(this,8)"  style="width:18px;height:18px"></button>
+        <button class="brush-btn"        data-size="14" onclick="setBrush(this,14)" style="width:24px;height:24px"></button>
+        <button class="brush-btn"        data-size="22" onclick="setBrush(this,22)" style="width:32px;height:32px"></button>
+      </div>
+
+      <div class="toolbar-separator"></div>
+
+      <button class="tool-btn active" id="tool-draw"   title="Pen"    onclick="setTool('draw')"  >✏️</button>
+      <button class="tool-btn"        id="tool-eraser" title="Eraser" onclick="setTool('eraser')">⬜</button>
+      <button class="tool-btn"        id="tool-fill"   title="Fill"   onclick="setTool('fill')"  >🪣</button>
+      <button class="tool-btn"        id="btn-clear"   title="Clear"  onclick="clearCanvas()"    >🗑️</button>
+    </div>
+
+    <!-- Canvas -->
+    <div class="canvas-wrapper">
+      <!-- Non-drawer overlay (hidden when it's your turn) -->
+      <div class="canvas-overlay hidden" id="canvas-overlay">
+        <p id="canvas-overlay-text">🎨 Waiting for the artist to start drawing…</p>
+      </div>
+
+      <!-- Turn transitions overlay -->
+      <div class="overlay-screen hidden" id="turn-overlay">
+        <div class="overlay-content">
+          <h2 id="turn-overlay-title">Round Over!</h2>
+          <p  id="turn-overlay-body">The word was:</p>
+          <span class="overlay-word" id="turn-overlay-word"></span>
+        </div>
+      </div>
+
+      <canvas id="drawing-canvas" width="800" height="560"></canvas>
+    </div>
+  </main>
+
+  <!-- ── Chat panel ───────────────────────────────── -->
+  <aside class="chat-panel">
+    <div class="panel-title">💬 Chat &amp; Guesses</div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chat-input" type="text"
+             placeholder="Type your guess…" maxlength="200" autocomplete="off"
+             onkeydown="handleChatKey(event)" />
+      <button class="chat-send-btn" onclick="sendGuess()" title="Send">➤</button>
+    </div>
+  </aside>
+
+</div><!-- /game-layout -->
+
+<!-- Socket.io client (served by our Express server) -->
+<script src="/socket.io/socket.io.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
